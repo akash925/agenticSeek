@@ -172,6 +172,13 @@ async def stop():
     interaction.current_agent.request_stop()
     return JSONResponse(status_code=200, content={"status": "stopped"})
 
+@api.get("/reset_state")
+async def reset_state():
+    global is_generating
+    logger.info("Reset state endpoint called")
+    is_generating = False
+    return JSONResponse(status_code=200, content={"status": "reset", "is_generating": is_generating})
+
 @api.get("/latest_answer")
 async def get_latest_answer():
     global query_resp_history
@@ -239,7 +246,6 @@ async def process_query(request: QueryRequest):
     try:
         is_generating = True
         success = await think_wrapper(interaction, request.query)
-        is_generating = False
 
         if not success:
             query_resp.answer = interaction.last_answer
@@ -278,8 +284,11 @@ async def process_query(request: QueryRequest):
         return JSONResponse(status_code=200, content=query_resp.jsonify())
     except Exception as e:
         logger.error(f"An error occurred: {str(e)}")
-        sys.exit(1)
+        query_resp.answer = f"Error: {str(e)}"
+        query_resp.reasoning = f"Processing failed: {str(e)}"
+        return JSONResponse(status_code=500, content=query_resp.jsonify())
     finally:
+        is_generating = False  # Always reset the flag
         logger.info("Processing finished")
         if config.getboolean('MAIN', 'save_session'):
             interaction.save_session()

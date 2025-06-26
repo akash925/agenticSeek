@@ -406,24 +406,29 @@ class AgentRouter:
         Returns:
         str: The estimated complexity
         """
-        try:
-            predictions = self.complexity_classifier.predict(text)
-        except Exception as e:
-            pretty_print(f"Error in estimate_complexity: {str(e)}", color="failure")
-            return "LOW"
-        predictions = sorted(predictions, key=lambda x: x[1], reverse=True)
-        if len(predictions) == 0:
-            return "LOW"
-        complexity, confidence = predictions[0][0], predictions[0][1]
-        if confidence < 0.5:
-            self.logger.info(f"Low confidence in complexity estimation: {confidence}")
-            return "HIGH"
-        if complexity == "HIGH":
-            return "HIGH"
-        elif complexity == "LOW":
-            return "LOW"
-        pretty_print(f"Failed to estimate the complexity of the text.", color="failure")
+        # TEMPORARY FIX: Force all queries to LOW complexity to bypass Planner Agent
+        # This routes all queries directly to specialist agents instead of complex planning
         return "LOW"
+        
+        # Original complexity estimation (disabled for now):
+        # try:
+        #     predictions = self.complexity_classifier.predict(text)
+        # except Exception as e:
+        #     pretty_print(f"Error in estimate_complexity: {str(e)}", color="failure")
+        #     return "LOW"
+        # predictions = sorted(predictions, key=lambda x: x[1], reverse=True)
+        # if len(predictions) == 0:
+        #     return "LOW"
+        # complexity, confidence = predictions[0][0], predictions[0][1]
+        # if confidence < 0.5:
+        #     self.logger.info(f"Low confidence in complexity estimation: {confidence}")
+        #     return "HIGH"
+        # if complexity == "HIGH":
+        #     return "HIGH"
+        # elif complexity == "LOW":
+        #     return "LOW"
+        # pretty_print(f"Failed to estimate the complexity of the text.", color="failure")
+        # return "LOW"
     
     def find_planner_agent(self) -> Agent:
         """

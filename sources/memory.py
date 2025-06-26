@@ -23,7 +23,7 @@ class Memory():
     def __init__(self, system_prompt: str,
                  recover_last_session: bool = False,
                  memory_compression: bool = True,
-                 model_provider: str = "deepseek-r1:14b"):
+                 model_provider: str = "deepseek-coder:6.7b-instruct"):
         self.memory = [{'role': 'system', 'content': system_prompt}]
         
         self.logger = Logger("memory.log")
